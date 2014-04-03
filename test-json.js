@@ -1,5 +1,6 @@
 var json = {
   "version_id": 0,
+  "string_key": "YOOOOO",
   "models": [{
     "generate": "models.model",
     "data": {

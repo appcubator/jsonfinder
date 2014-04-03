@@ -44,4 +44,41 @@ html, body {
 	list-style: none;
 	overflow-y: scroll;
 	display: inline-block;
+
+	display: none;
+}
+
+
+
+.level.three {
+	display: none;
+	height: 100%;
+	border-right: 1px solid #cad3e2;
+
+	width: 220px;
+	margin: 0;
+	padding-left: 0;
+	list-style: none;
+	overflow-y: scroll;
+	display: none;
+}
+
+
+.level.editor {
+	height: 100%;
+	border-right: 1px solid #cad3e2;
+
+	width: 320px;
+	margin: 0;
+	padding-left: 0;
+	list-style: none;
+	overflow-y: scroll;
+	display: inline-block;
+	display: none;
+}
+
+.text-editor {
+	display: inline-block;
+	width: 300px;
+	height: 100%;
 }

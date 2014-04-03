@@ -2,7 +2,8 @@ require.config({
     paths: {
         "jquery": "./libs/jquery/jquery",
         "jquery-ui": "./libs/jquery-ui/jquery-ui",
-        "underscore": "./libs/underscore-amd/underscore"
+        "underscore": "./libs/underscore-amd/underscore",
+        "ace": "http://d1n0x3qji82z53.cloudfront.net/src-min-noconflict/ace",
     },
 
     shim: {
@@ -12,6 +13,9 @@ require.config({
         },
         "underscore": {
             exports: "_"
+        },
+        "ace": {
+            exports: 'ace'
         }
     },
 
@@ -24,7 +28,10 @@ require.config({
 });
 
 //libs
-require(['underscore', 'jquery', './test-json'],function() {
+require(['underscore', 'jquery', 'ace', './level', './test-json'], 
+
+function(_, $, ace, LevelView) {
+
 	console.log(json);
 
 	var level1 = document.createElement('ul');
@@ -33,25 +40,39 @@ require(['underscore', 'jquery', './test-json'],function() {
 	level2.className = "level two";
 	var level3 = document.createElement('ul');
 	level3.className = "level three";
+	var levelEditor = document.createElement('div');
+	levelEditor.className = "level editor";
+
+	var editor = document.createElement('div');
+	editor.className = "text-editor";
+	editor.id = "textEditor";
+
+	levelEditor.appendChild(editor);
 
 	document.body.appendChild(level1);
 	document.body.appendChild(level2);
 	document.body.appendChild(level3);
+	document.body.appendChild(levelEditor);
+
+
+    var editor = ace.edit("textEditor");
+   	editor.setTheme("ace/theme/monokai");
+   	editor.getSession().setMode("ace/mode/javascript");
 
 	function _isArray(obj) {
-
+		return Object.prototype.toString.call( obj ) === '[object Array]';
 	}
 
 	function _isObject(obj) {
-
+		return (typeof obj === 'object');
 	}
 	
 	function _isString(obj) {
-
+		return (typeof obj === 'string');
 	}
 	
 	function _isNumber(obj) {
-
+		return (typeof n === 'number');
 	}
 
 	function getObjWithPath(path) {
@@ -72,23 +93,10 @@ require(['underscore', 'jquery', './test-json'],function() {
 		}
 	}
 
-	function layoutLevel1 (keys, title, parentPath) {
-		level1.innerHTML = '';
-		var liEl = document.createElement('li');
-		liEl.className = 'title';
-		liEl.innerHTML = title;
-		level1.appendChild(liEl);
-
-		_.each(keys, function(key) {
-			var liEl = document.createElement('li');
-			liEl.dataset.key = key;
-			liEl.dataset.level = 1;
-			liEl.dataset.parentPath = parentPath;
-			liEl.innerHTML = key;
-			bindNavigationKey(liEl);
-			level1.appendChild(liEl);
-		});
-	};
+	function fillEditor (string, key, newParentPath) {
+		$(levelEditor).css('display', 'inline-block');
+		editor.setValue(string);
+	}
 
 	var navigateToKey = function(e) {
 		var el = e.currentTarget;
@@ -100,18 +108,33 @@ require(['underscore', 'jquery', './test-json'],function() {
 
 		}
 		else {
-			var obj = getObjWithPath(parentPath);
-			var keys = _.keys(obj[key]);
-			var newParentPath = parentPath + "." + key;
+			var parentObj = getObjWithPath(parentPath);
+			var obj = parentObj[key];
 
-			switch(level) {
-				case "1":
-					layoutLevel2(keys, key, newParentPath);
-					break;
-				case "2":
-					layoutLevel3(keys, key, newParentPath);
-					break;
+			if (_isNumber(obj)) {
+
 			}
+			else if (_isString(obj)) {
+				fillEditor(obj, key, newParentPath);
+			}
+			else if (_isArray(obj)) {
+
+			}
+			else if (_isObject(obj)) {
+
+				var keys = _.keys(obj);
+				var newParentPath = parentPath + "." + key;
+
+				switch(level) {
+					case "1":
+						layoutLevel2(keys, key, newParentPath);
+						break;
+					case "2":
+						layoutLevel3(keys, key, newParentPath);
+						break;
+				}
+			}
+
 		}
 
 	}
@@ -120,28 +143,10 @@ require(['underscore', 'jquery', './test-json'],function() {
 		$(domEl).on('click', navigateToKey);
 	}
 
-	function layoutLevel2 (keys, title, parentPath) {
-		level2.innerHTML = '';
-		var liEl = document.createElement('li');
-		liEl.className = 'title';
-		liEl.innerHTML = title;
-		level2.appendChild(liEl);
-
-		_.each(keys, function(key) {
-			console.log(key);
-			var liEl = document.createElement('li');
-			liEl.dataset.key = key;
-			liEl.dataset.level = 2;
-			liEl.dataset.parentPath = parentPath;
-			liEl.innerHTML = key;
-			bindNavigationKey(liEl);
-			level2.appendChild(liEl);
-		});
-	};
-
 	var keys = _.keys(json);
-	layoutLevel1(keys, "ROOT", null);
-
+	var firstView = new LevelView(keys, "ROOT", null, 0);
+	firstView.superView = this;
+	firstView.render();
 });
 
 define("main", function() {});
