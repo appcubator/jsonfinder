@@ -8,7 +8,7 @@ define(function(require, exports, module) {
     	this.title = title;
 
     	this.keys = keys;
-   		this.parentPath = parentPath;
+   		this.parentPath = parentPath || null;
    		this.parentObj = parentObj;
 
     	if (parentPath == "ROOT" || parentPath == "null" || parentPath == null) {
@@ -19,11 +19,13 @@ define(function(require, exports, module) {
     	}
     		
     		
-    	this.level = level || 1;
+    	this.level = level || 0;
 
     		//this.parentObj = this.superView.;
 
     	this.render = function() {
+
+    		highlightPrevKey(level, title);
 
 			var levelEl = document.createElement('ul');
 			levelEl.className = "level one";
@@ -63,6 +65,12 @@ define(function(require, exports, module) {
 			liEl.innerHTML = '<span class="icon '+type+'"></span><span>' + key + '</span>';
 
 			return liEl;
+    	}
+
+    	this.highlightKey = function(keyToSelect) {
+    		console.log(keyToSelect);
+    		$(this.domEl).find('.selected').removeClass('selected');
+    		$(this.domEl).find('[data-key="' + keyToSelect + '"]').addClass('selected');
     	}
 
 

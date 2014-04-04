@@ -86,6 +86,16 @@ function(_, $, ace, LevelView) {
 		}
 	}
 
+	highlightPrevKey = function(level, title) {
+
+		level = level - 1;
+		var levelObj = levels[level];
+
+		if (title != null && levelObj != null) {
+			levelObj.highlightKey(title);
+		}
+	}
+
 	getObjWithPath =  function(path) {
 		var tokens = path.split('.');
 		
@@ -101,6 +111,14 @@ function(_, $, ace, LevelView) {
 
 			return curObj;
 		}
+	}
+
+	getLastKey = function(path) {
+		
+		if (!path) return null;
+
+		var tokens = path.split('.');
+		return tokens[tokens.length - 1];
 	}
 
 	function fillEditor (string, key, newParentPath) {

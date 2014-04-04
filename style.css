@@ -16,6 +16,8 @@ html, body {
 	list-style: none;
 	overflow-y: scroll;
 	display: inline-block;
+
+	cursor: default;
 }
 
 .level li.title {
@@ -33,6 +35,14 @@ html, body {
 
 .level li:hover {
 	background-color: #bac3d2;
+}
+
+.level li.selected {
+	background-color: #bac3d2;
+}
+
+.level li.title:hover {
+	background-color: transparent;
 }
 
 .level li span {
@@ -81,7 +91,7 @@ html, body {
 
 .text-editor {
 	display: inline-block;
-	width: 300px;
+	width: 320px;
 	height: 100%;
 }
 
