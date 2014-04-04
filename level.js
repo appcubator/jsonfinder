@@ -3,55 +3,75 @@ define(function(require, exports, module) {
     'use strict';
 
 
-    var LevelView = function() {
+    var LevelView = function(keys, title, parentObj, parentPath, level) {
 
-    	this.initialize = function(keys, title, parentPath, level) {
+    	this.title = title;
 
-    		this.title = title;
-    		this.keys = keys;
-    		this.parentPath = parentPath;
-    		this.level = level || 1;
+    	this.keys = keys;
+   		this.parentPath = parentPath;
+   		this.parentObj = parentObj;
 
-    		this.parentObj = this.superView.getObjWithPath(this.parentPath);
-
+    	if (parentPath == "ROOT" || parentPath == "null" || parentPath == null) {
+    		this.parentPath = title;
     	}
+    	else {
+   			this.parentPath = parentPath + "."  + title;
+    	}
+    		
+    		
+    	this.level = level || 1;
+
+    		//this.parentObj = this.superView.;
 
     	this.render = function() {
 
-
-
-			var level = document.createElement('ul');
-			level.className = "level one";
+			var levelEl = document.createElement('ul');
+			levelEl.className = "level one";
 
 			var liEl = document.createElement('li');
 			liEl.className = 'title';
 			liEl.innerHTML = this.title;
-			level.appendChild(liEl);
+			levelEl.appendChild(liEl);
 
 			_.each(this.keys, function(key) {
 				
+				var liEl = this.renderLiEl(key);
 				this.bindNavigationKey(liEl);
-				level.appendChild(liEl);
-			});
+				levelEl.appendChild(liEl);
+			}, this);
 
-			document.body.appendChild(level);
+			document.body.appendChild(levelEl);
+			this.domEl = levelEl;
     	},
 
-    	this.renderLiEl = function() {
+    	this.renderLiEl = function(key) {
     		var liEl = document.createElement('li');
 			liEl.dataset.key = key;
 			liEl.dataset.level = this.level;
 			liEl.dataset.parentPath = this.parentPath;
 
-			var type = "k";
+			var obj = {};
 
-			liEl.innerHTML = '<span>'+type+'</span><span>' + key + '</span>';
+			if(this.title == "ROOT") {
+				obj = this.parentObj[key];
+			}
+			else {
+				obj = this.parentObj[this.key];
+			}
 
+			var type = getType(obj);
+			liEl.innerHTML = '<span class="icon '+type+'"></span><span>' + key + '</span>';
+
+			return liEl;
     	}
 
 
     	this.bindNavigationKey = function(domEl) {
-			//$(domEl).on('click', navigateToKey);
+			$(domEl).on('click', navigateToKey);
+		}
+
+		this.remove = function() {
+			$(this.domEl).remove(); 
 		}
     }
 

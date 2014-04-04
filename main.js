@@ -3,7 +3,7 @@ require.config({
         "jquery": "./libs/jquery/jquery",
         "jquery-ui": "./libs/jquery-ui/jquery-ui",
         "underscore": "./libs/underscore-amd/underscore",
-        "ace": "http://d1n0x3qji82z53.cloudfront.net/src-min-noconflict/ace",
+        "ace": "./libs/ace/ace",
     },
 
     shim: {
@@ -32,32 +32,29 @@ require(['underscore', 'jquery', 'ace', './level', './test-json'],
 
 function(_, $, ace, LevelView) {
 
-	console.log(json);
+	var levels = {};
 
-	var level1 = document.createElement('ul');
-	level1.className = "level one";
-	var level2 = document.createElement('ul');
-	level2.className = "level two";
-	var level3 = document.createElement('ul');
-	level3.className = "level three";
-	var levelEditor = document.createElement('div');
-	levelEditor.className = "level editor";
+	getType = function(obj) {
 
-	var editor = document.createElement('div');
-	editor.className = "text-editor";
-	editor.id = "textEditor";
+			if (_isNumber(obj)) {
+				return "number";
+			}
+			else if (_isString(obj)) {
+				return "string";
+			}
+			else if (_isArray(obj)) {
+				return "array";
+			}
+			else if (_isObject(obj)) {
 
-	levelEditor.appendChild(editor);
+				return "object";
+			}
 
-	document.body.appendChild(level1);
-	document.body.appendChild(level2);
-	document.body.appendChild(level3);
-	document.body.appendChild(levelEditor);
-
-
-    var editor = ace.edit("textEditor");
-   	editor.setTheme("ace/theme/monokai");
-   	editor.getSession().setMode("ace/mode/javascript");
+			return "unknown";
+	}
+    //var editor = ace.edit("textEditor");
+   	//editor.setTheme("ace/theme/monokai");
+   	//editor.getSession().setMode("ace/mode/javascript");
 
 	function _isArray(obj) {
 		return Object.prototype.toString.call( obj ) === '[object Array]';
@@ -68,18 +65,31 @@ function(_, $, ace, LevelView) {
 	}
 	
 	function _isString(obj) {
-		return (typeof obj === 'string');
+		return (typeof obj === 'string' || obj == "");
 	}
 	
 	function _isNumber(obj) {
 		return (typeof n === 'number');
 	}
 
-	function getObjWithPath(path) {
+	cleanDeeperLevels = function(levelNo) {
+
+		var curLevel = levels[levelNo];
+
+		while (curLevel) {
+
+			curLevel.remove(); 
+			curLevel = null; 
+			levelNo++;
+			curLevel = levels[levelNo];
+
+		}
+	}
+
+	getObjWithPath =  function(path) {
 		var tokens = path.split('.');
 		
-		console.log(path);
-		if (tokens.length == 0 || path == null || path == "null") {
+		if (tokens.length == 0 || path == null || path == "null" || path == "ROOT") {
 			return json;
 		}
 
@@ -98,55 +108,102 @@ function(_, $, ace, LevelView) {
 		editor.setValue(string);
 	}
 
-	var navigateToKey = function(e) {
+	navigateToKey = function(e) {
 		var el = e.currentTarget;
 		var parentPath = el.dataset.parentPath;
 		var key = el.dataset.key;
 		var level = el.dataset.level;
+		var parentObj = getObjWithPath(parentPath);
+		var obj = parentObj[key];
 
-		if (parentPath == null) {
-
-		}
-		else {
-			var parentObj = getObjWithPath(parentPath);
-			var obj = parentObj[key];
-
-			if (_isNumber(obj)) {
-
-			}
-			else if (_isString(obj)) {
-				fillEditor(obj, key, newParentPath);
-			}
-			else if (_isArray(obj)) {
-
-			}
-			else if (_isObject(obj)) {
-
-				var keys = _.keys(obj);
-				var newParentPath = parentPath + "." + key;
-
-				switch(level) {
-					case "1":
-						layoutLevel2(keys, key, newParentPath);
-						break;
-					case "2":
-						layoutLevel3(keys, key, newParentPath);
-						break;
-				}
-			}
-
+		
+		switch (getType(obj)) {
+			case "object":
+				level = parseInt(level) + 1;
+				navigateToObject(obj, key, parentPath, level);
+				break;
+			case "string":
+				level = parseInt(level) + 1;
+				editString(obj, key, parentObj, parentPath, level);
+				break;
+			case "array":
+				level = parseInt(level) + 1;
+				navigateToArray(obj, key, parentPath, level);
+				break;
+			case "number":
+			 	editNumber(obj);
+				break;
 		}
 
 	}
+
+	editString = function(obj, title, parentObj, parentPath, fromLevel) {
+
+		var nextLevel = fromLevel++;
+		cleanDeeperLevels(nextLevel);
+
+		var levelEditor = document.createElement('div');
+		levelEditor.className = "level editor";
+
+		var editor = document.createElement('div');
+		editor.className = "text-editor";
+		editor.id = "textEditor";
+
+		levelEditor.appendChild(editor);
+		document.body.appendChild(levelEditor);
+
+	    var editor = ace.edit("textEditor");
+	   	//editor.setTheme("ace/theme/monokai");
+	   	//editor.getSession().setMode("ace/mode/javascript");
+	   	editor.setValue(obj);
+
+
+	   	editor.getSession().on('change', function(e) {
+		    var val = editor.getValue();
+		    parentObj[title] = val;
+		});
+
+		levels[nextLevel] = $(levelEditor);
+	},
+
+	navigateToObject = function(obj, title, parentPath, fromLevel) {
+		var nextLevel = fromLevel++;
+		var keys = _.keys(obj);
+
+		cleanDeeperLevels(nextLevel);
+		
+		var firstView = new LevelView(keys, title, obj, parentPath, nextLevel);
+		firstView.superView = this;
+		firstView.render();
+
+		levels[nextLevel] = firstView;
+	}
+
+	navigateToArray = function(obj, title, parentPath, fromLevel) {
+		
+		var nextLevel = fromLevel++;
+		var keys = _.map(obj, function(val, ind) { return ind });
+
+		cleanDeeperLevels(nextLevel);
+		
+		var firstView = new LevelView(keys, title, obj, parentPath, nextLevel);
+		firstView.superView = this;
+		firstView.render();
+
+		levels[nextLevel] = firstView;
+	}
+
 
 	var bindNavigationKey = function(domEl) {
 		$(domEl).on('click', navigateToKey);
 	}
 
 	var keys = _.keys(json);
-	var firstView = new LevelView(keys, "ROOT", null, 0);
+	var firstView = new LevelView(keys, "ROOT", json, null, 0);
 	firstView.superView = this;
 	firstView.render();
+
+	levels[0] = firstView;
 });
 
 define("main", function() {});

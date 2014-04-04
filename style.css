@@ -6,9 +6,10 @@ html, body {
 	font-weight: 300;
 }
 
-.level.one {
+.level {
 	height: 100%;
 	background-color: #cad3e2;
+	border-right: 1px solid #aab3c2;
 	width: 220px;
 	margin: 0;
 	padding-left: 0;
@@ -34,6 +35,10 @@ html, body {
 	background-color: #bac3d2;
 }
 
+.level li span {
+	vertical-align: top;
+}
+
 .level.two {
 	height: 100%;
 	border-right: 1px solid #cad3e2;
@@ -44,8 +49,6 @@ html, body {
 	list-style: none;
 	overflow-y: scroll;
 	display: inline-block;
-
-	display: none;
 }
 
 
@@ -74,11 +77,29 @@ html, body {
 	list-style: none;
 	overflow-y: scroll;
 	display: inline-block;
-	display: none;
 }
 
 .text-editor {
 	display: inline-block;
 	width: 300px;
 	height: 100%;
+}
+
+.icon {
+	display: inline-block;
+	width: 36px;
+	height: 36px;
+	background-image: url('./icons.png');
+}
+
+.icon.array {
+	background-position: -36px 0;
+}
+
+.icon.number {
+	background-position: -72px 0;
+}
+
+.icon.string {
+	background-position: -108px 0;
 }
